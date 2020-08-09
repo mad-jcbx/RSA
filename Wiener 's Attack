@@ -1,4 +1,5 @@
-#test2 Finally fraction form
+#sage 
+#fraction form
 from Crypto.Util.number import *
 from sage.all import *
 from random import randint
