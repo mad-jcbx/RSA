@@ -1,0 +1,109 @@
+#test2 Finally fraction form
+from Crypto.Util.number import *
+from sage.all import *
+from random import randint
+from gmpy2 import invert,iroot#cannot import all ,there will be problems
+def list_cf(p,q):
+    '''
+    return continued Fractions of p/q
+    imput:int:p,q
+    output:list of continued Fractions p/q   
+    '''
+    alist=[]
+    r=p
+    while(r):
+        a=floor(p/q)
+        r=p%q
+        p=q
+        q=r
+        alist.append(int(a))
+    return alist
+
+def check_cf(alist):
+    '''
+    input:alist:list
+    output:sum
+    '''
+    sum=0
+    blist=alist[::-1]
+    for i in blist:
+        sum+=i
+        sum=(1/sum)
+    return (1/sum)
+
+def convergent_cf_2(alist):
+    '''
+    input:alist:list
+    output:the convergent of each cf :list
+    change some detail
+    '''   
+    blist=[]
+    for i in range(1,len(alist)):
+        sum=0
+        if i>1 and is_even(i):
+            for k in range(i,0,-1):
+                if k==i:
+                    sum+=(alist[k]+1)
+                else:
+                    sum+=(alist[k])
+                sum=(1/sum)
+        else:
+            for k in range(i,0,-1):
+                sum+=alist[k]
+                sum=(1/sum)
+        blist.append(sum)
+    return blist
+            
+                
+                            
+def possible_phi(e,alist,N):
+    for m in range(1):
+        for x in alist:
+            phi=floor(e/x)-m
+            jd=int(pow((phi-N-1),2)-4*N)
+            if jd >= 0:
+                if iroot(jd,int(2))[1]:
+                    (p,q)=var('p,q')
+                    x=solve([(p-1)*(q-1)==phi, p*q==N],p,q)
+                    print x[0]
+                    return int(str(x[0][0]).split('==')[1])
+                else:
+                    continue
+            else:
+                continue
+
+def possible_phi2(e,alist,N): 
+    for x in alist:
+#       (k,dg)=as_integer_ratio(x)
+        phi = floor(e*(1/x))
+        if (N-phi+1)%2==0 and sqrt(pow((N-phi+1)//2,2)-N).is_integer():
+                (p,q)=var('p,q')
+                x=solve([(p-1)*(q-1)==phi, p*q==N],p,q)
+                print x[0]
+                return int(str(x[0][0]).split('==')[1])
+        else:
+            continue
+        
+def solve_wiener_attack(e,N):
+    list=list_cf(e,N)
+    clist=convergent_cf_2(list)
+    return possible_phi2(e,clist,N)
+
+
+def test():
+    while 1:
+        p=getPrime(512)
+        q=getPrime(512)
+        N=p*q
+        nn=int(pow(N,0.25))
+        d=next_prime(randint(1,nn))
+        if gcd(p-1,q-1)<=2 and q<p and p<2*q:
+            break
+
+    e=invert(d,(p-1)*(q-1))
+    print solve_wiener_attack(e,N)    
+#=pq = 8927 and e = 2621.
+(e,N) = (2621, 8927)
+print solve_wiener_attack(e,N)
+for _ in range(10):
+    test()
